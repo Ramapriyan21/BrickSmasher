@@ -74,3 +74,8 @@ You can expand the system by adding more management features, such as integratin
 ## Known Issues
 
 - The app requires a stable internet connection for running Django-based AJAX features.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
+
