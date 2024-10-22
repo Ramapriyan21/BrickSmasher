@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Rent/Return Movies</title>
+</head>
+<body>
+    <h1>Rent/Return Movies</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <label>Email:</label>
+        <input type="email" name="email" required>
+        <button type="submit">Submit</button>
+    </form>
+    {% if user %}
+        <h2>{{ user.first_name }} {{ user.last_name }}</h2>
+        <h3>Checked Out Movies</h3>
+        <ul>
+            {% for checkout in checked_out_movies %}
+                <li>
+                    {{ checkout.movie.title }}
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="checkout_id" value="{{ checkout.id }}">
+                        <button type="submit" name="action" value="return">Return</button>
+                    </form>
+                </li>
+            {% endfor %}
+        </ul>
+        <h3>Available Movies</h3>
+        <ul>
+            {% for movie in available_movies %}
+                <li>
+                    {{ movie.title }}
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="movie_id" value="{{ movie.id }}">
+                        <button type="submit" name="action" value="rent">Rent</button>
+                    </form>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    {% if error %}
+        <p style="color:red;">{{ error }}</p>
+    {% endif %}
+    <a href="{% url 'home' %}">Home</a>
+</body>
+</html>
+<script>
+    function createUser() {
+        const data = {
+            email: document.getElementById('email').value,
+            first_name: document.getElementById('first_name').value,
+            last_name: document.getElementById('last_name').value
+        };
+
+        fetch('/dbUser/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                document.getElementById('error').innerText = data.error;
+            } else {
+                document.getElementById('success').innerText = 'User created successfully!';
+            }
+        });
+    }
+
+    function manageMovies(action, movie_id = null, title = null) {
+        const data = { action: action };
+        if (movie_id) data.movie_id = movie_id;
+        if (title) data.title = title;
+
+        fetch('/dbMovie/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                document.getElementById('error').innerText = data.error;
+            } else {
+                // Update the movies table with the new data
+                updateMoviesTable(data);
+            }
+        });
+    }
+
+    function rentReturn(action, user_id, movie_id) {
+        const data = {
+            action: action,
+            user_id: user_id,
+            movie_id: movie_id
+        };
+
+        fetch('/dbRent/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                document.getElementById('error').innerText = data.error;
+            } else {
+                // Update the checkout table with the new data
+                updateCheckoutTable(data);
+            }
+        });
+    }
+
+    function updateMoviesTable(movies) {
+        // Implement function to update movies table
+    }
+
+    function updateCheckoutTable(checkouts) {
+        // Implement function to update checkout table
+    }
+</script>
